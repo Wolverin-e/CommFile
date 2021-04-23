@@ -5,8 +5,8 @@ Communication File System
 ## Setting-Up Development environment
 
 - Start by Forking [https://github.com/Wolverin-e/CommFile](https://github.com/Wolverin-e/CommFile) to yourusername.
-- Docker must be installed.
-- Install [Vscode-Remote-ExtentionPack](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.vscode-remote-extensionpack).
+- [Docker](https://docs.docker.com/engine/install/) must be installed.
+- Install [VSCode-Remote-ExtentionPack](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.vscode-remote-extensionpack).
 
 ```sh
 # Clone your forked repository locally
