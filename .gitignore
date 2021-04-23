@@ -1,0 +1,13 @@
+# General Stuff
+.DS_Store
+
+# Config
+config.json
+
+# Python stuff
+__pycache__
+venv
+*.egg-info
+
+# vscode settings
+.vscode
