@@ -1,9 +1,11 @@
-import smtplib, ssl
+import smtplib
+import ssl
 from email.message import EmailMessage
 import json
 from pathlib import Path
 
 FILE_DIR = Path(__file__).parent.resolve()
+
 
 def send_msg(msg_body):
 
@@ -21,6 +23,13 @@ def send_msg(msg_body):
 
     smtp_config = config["smtp"]
 
-    with smtplib.SMTP_SSL(smtp_config["server"], int(smtp_config["port"]), context=context) as server:
+    with(
+        smtplib.SMTP_SSL(
+            host=smtp_config["server"],
+            port=int(smtp_config["port"]),
+            context=context
+        ) as server
+    ):
+
         server.login(smtp_config["user"], smtp_config["pass"])
         server.send_message(msg)

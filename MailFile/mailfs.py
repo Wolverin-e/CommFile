@@ -21,7 +21,7 @@ class MailFS(LoggingMixIn, Operations):
             st_ctime=now,
             st_mtime=now,
             st_atime=now,
-            st_size=len("%s\n"%0)
+            st_size=len("%s\n" % 0)
         )
 
     def getattr(self, path, fh=None):
@@ -32,7 +32,7 @@ class MailFS(LoggingMixIn, Operations):
         return self.files[path]
 
     def read(self, path, size, offset, fh):
-        encoded = lambda x: ('%s\n' % x).encode('utf-8')
+        encoded = lambda x: ('%s\n' % x).encode('utf-8')  # noqa: E731
         if path == "/":
             return encoded(1)
 

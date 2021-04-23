@@ -4,6 +4,7 @@ from fuse import FUSE
 
 from .mailfs import MailFS
 
+
 def main():
 
     if len(argv) != 2:

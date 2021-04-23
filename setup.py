@@ -1,10 +1,12 @@
 from setuptools import setup, find_packages
 import pathlib
 
+
 def get_readme() -> str:
     current_dir = pathlib.Path(__file__).parent.resolve()
     readme_path = current_dir/"README.md"
     return readme_path.read_text('utf-8')
+
 
 setup(
     name='CommFile',
