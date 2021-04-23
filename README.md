@@ -1,3 +1,3 @@
-# ComFS
+# CommFS
 
 Communication File System
