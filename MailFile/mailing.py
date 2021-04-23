@@ -1,10 +1,13 @@
 import smtplib, ssl
 from email.message import EmailMessage
 import json
+from pathlib import Path
+
+FILE_DIR = Path(__file__).parent.resolve()
 
 def send_msg(msg_body):
 
-    with open("./config.json") as conf_file:
+    with open(FILE_DIR/"config.json") as conf_file:
         config = json.load(conf_file)
 
     msg = EmailMessage()

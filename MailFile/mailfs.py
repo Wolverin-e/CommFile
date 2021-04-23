@@ -5,7 +5,7 @@ from stat import S_IFREG
 from time import time
 from fuse import FuseOSError, Operations, LoggingMixIn
 
-from mailing import send_msg
+from .mailing import send_msg
 
 
 class MailFS(LoggingMixIn, Operations):
