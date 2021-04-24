@@ -42,7 +42,9 @@ $ cd ..
 $ mm ./mail_drive
 
 # In another terminal
-$ echo "Hello Testing World!" >> mail_drive
+$ mkdir ./mail_drive/some.email@gmail.com
+$ echo "Hello Testing World!" >> ./mail_drive/some.email@gmail.com/<subject-string>.mail
+$ cp ./README.md ./mail_drive/some.email@gmail.com/
 ```
 
 ## Proposing new changes
