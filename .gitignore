@@ -11,3 +11,7 @@ venv
 
 # vscode settings
 .vscode
+
+# Inside mail_drive
+mail_drive/*
+test.sh
