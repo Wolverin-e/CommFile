@@ -14,46 +14,35 @@ def get_text(msg):
     else:
         return msg.get_payload(None, True)
 
+def receive():
+    unread_msg = ""
+    delimiter = '**********************\n\n'
+    with open(FILE_DIR/"config.json") as conf_file:
+        config = json.load(conf_file)
+    mail = imaplib.IMAP4_SSL('imap.gmail.com')
+    mail.login(config["smtp"]["user"], config["smtp"]["pass"])
+    mail.select()
+    return_code, data = mail.search(None, 'UnSeen')
 
-try:
-    last_read = -1
-    while 1:
-        with open(FILE_DIR/"config.json") as conf_file:
-            config = json.load(conf_file)
-        mail = imaplib.IMAP4_SSL('imap.gmail.com')
-        mail.login(config["smtp"]["user"], config["smtp"]["pass"])
-        mail.select()
-        return_code, data = mail.search(None, 'All')
+    mail_ids = data[0].decode()
+    id_list = mail_ids.split()
+    first_email_id = int(id_list[0])
+    latest_email_id = int(id_list[-1])
 
-        mail_ids = data[0].decode()
-        id_list = mail_ids.split()
-        latest_email_id = int(id_list[-1])
+    count = 0
+    for i in range(latest_email_id,first_email_id, -1):
+        typ, data = mail.fetch(str(i), '(RFC822)')
+        for response_part in data:
+            if isinstance(response_part, tuple):
+                msg = email.message_from_string(
+                    response_part[1].decode("utf-8"))
+                email_subject = str(msg['subject'])
+                email_from = str(msg['from'])
+                email_body = str(get_text(msg).decode("utf-8"))
+                unread_msg = '\n'.join([unread_msg,email_from,email_subject,email_body,delimiter])
+        count += 1
+        if count >= 1:
+            break
 
-        if latest_email_id > last_read:
-
-            with open('persons.csv', 'w', newline="") as csvfile:
-                filewriter = csv.writer(
-                    csvfile,
-                    delimiter=',',
-                    quotechar='|',
-                    quoting=csv.QUOTE_MINIMAL)
-                filewriter.writerow(['From', 'Subject'])
-                typ, data = mail.fetch(str(latest_email_id), '(RFC822)')
-                for response_part in data:
-                    if isinstance(response_part, tuple):
-                        msg = email.message_from_string(
-                            response_part[1].decode("utf-8"))
-                        email_subject = msg['subject']
-                        email_from = msg['from']
-                        email_body = get_text(msg).decode("utf-8")
-                        filewriter.writerow([
-                            email_from,
-                            email_subject,
-                            email_body])
-
-            last_read = latest_email_id
-        mail.logout()
-        time.sleep(1)
-
-except Exception as e:
-    print(e)
+    mail.logout()
+    return unread_msg
