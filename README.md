@@ -2,7 +2,7 @@
 
 Communication Using File System
 
-## Intro
+## Idea Behind CommFile
 
 - What if you could drop your mails like this?
 
