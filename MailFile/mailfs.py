@@ -22,8 +22,7 @@ class MailFS(LoggingMixIn, Operations):
         self.fd = 0
         self.flag = False
         self.msg = (receive()).encode('utf-8')
-        now = time()
-        uid, gid, pid = fuse_get_context()
+        now, uid, gid, pid = self._get_attrs_set()
 
         self.files['/'] = dict(
             st_mode=(S_IFDIR | 0o755),
@@ -44,12 +43,16 @@ class MailFS(LoggingMixIn, Operations):
             st_uid=uid,
             st_gid=gid,
             st_pid=pid,
-            st_size = len(self.msg)
+            st_size=len(self.msg)
         )
 
+    @staticmethod
+    def _get_attrs_set():
+        now = time()
+        uid, gid, pid = fuse_get_context()
+        return (now, uid, gid, pid)
 
     def getattr(self, path, fh=None):
-        super().__getattribute__
         if path not in self.files:
             raise FuseOSError(ENOENT)
 
@@ -57,8 +60,7 @@ class MailFS(LoggingMixIn, Operations):
 
     def mkdir(self, path, mode):
 
-        now = time()
-        uid, gid, pid = fuse_get_context()
+        now, uid, gid, pid = self._get_attrs_set()
 
         self.files[path] = dict(
             st_mode=(S_IFDIR | 0o755),
@@ -74,29 +76,23 @@ class MailFS(LoggingMixIn, Operations):
         logging.debug(self.files)
 
     def read(self, path, size, offset, fh):
-        encoded = lambda x: ('%s\n' % x).encode('utf-8')  # noqa: E731
-        # # return self.data[path][offset:offset+size]
-        # if self.flag == False:
-        #     self.msg = receive().replace('\r', '\n')
-        #     self.msg = self.msg.encode('utf-8')
-        #     self.flag = True
-        
-        return self.msg[offset:offset+size]
+
+        if path == "/recent.unread":
+            return self.msg[offset:offset+size]
 
         raise RuntimeError('unexpected path: %r' % path)
 
     def readdir(self, path, fh):
-        files = ['.', '..']
+        files_in_dir = ['.', '..']
         for k in self.files:
             if k != '/':
-                files.append((Path(k).name, self.getattr(k), 0))
+                files_in_dir.append((Path(k).name, self.getattr(k), 0))
 
-        return files
+        return files_in_dir
 
     def create(self, path, mode, fi=None):
 
-        now = time()
-        uid, gid, pid = fuse_get_context()
+        now, uid, gid, pid = self._get_attrs_set()
 
         self.files[path] = dict(
             st_mode=(mode or S_IFREG | 0o755),
@@ -118,32 +114,37 @@ class MailFS(LoggingMixIn, Operations):
 
     def release(self, path, fh):
 
+        path_str = path
         path = Path(path)
-
+        clean = False
         logger.debug(path)
 
         if(path.suffix == ".unread"):
             self.msg = (receive()).encode('utf-8')
-            self.files[path]['st_size'] = len(self.msg)
+            self.files[path_str]['st_size'] = len(self.msg)
+        elif(path.suffix == ".mail"):
+            msg = self.data[path_str].decode("utf-8")
+            logging.debug("Suffix mail: %s", self.data)
+            send_msg(
+                msg_body=msg,
+                to=path.parent.name,
+                subject=path.stem
+            )
+            clean = True
         else:
-            if(path.suffix == ".mail"):
-                msg = self.data[path.__str__()].decode("utf-8")
-                logging.debug("Suffix mail: %s", self.data)
-                send_msg(
-                    msg_body=msg,
-                    to=path.parent.name,
-                    subject=path.stem
-                )
-            elif(path.suffix == ".attachment"):
-                attachment = self.data[path.__str__()].decode("utf-8")
-                send_msg(
-                    to=path.parent.name,
-                    subject=path.name,
-                    attach=attachment,
-                    filename=path.name
-                )
+            # Is an attachment
+            attachment = self.data[path_str].decode("utf-8")
+            send_msg(
+                to=path.parent.name,
+                subject=path.name,
+                attach=attachment,
+                filename=path.name
+            )
+            clean = True
 
-            self.data.clear()
+        if clean:
+            del self.data[path_str]
+            del self.files[path_str]
 
     # Disable unused operations
     getxattr = None

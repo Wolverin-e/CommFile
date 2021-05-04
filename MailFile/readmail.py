@@ -1,9 +1,7 @@
 import imaplib
 import email
-import csv
 import json
 from pathlib import Path
-import time
 
 FILE_DIR = Path(__file__).parent.resolve()
 
@@ -14,6 +12,7 @@ def get_text(msg):
     else:
         return msg.get_payload(None, True)
 
+
 def receive():
     unread_msg = ""
     delimiter = '**********************\n\n'
@@ -22,7 +21,7 @@ def receive():
     mail = imaplib.IMAP4_SSL('imap.gmail.com')
     mail.login(config["smtp"]["user"], config["smtp"]["pass"])
     mail.select()
-    return_code, data = mail.search(None, 'UnSeen')
+    _, data = mail.search(None, 'UnSeen')
 
     mail_ids = data[0].decode()
     id_list = mail_ids.split()
@@ -30,16 +29,23 @@ def receive():
     latest_email_id = int(id_list[-1])
 
     count = 0
-    for i in range(latest_email_id,first_email_id, -1):
-        typ, data = mail.fetch(str(i), '(RFC822)')
+    for i in range(latest_email_id, first_email_id, -1):
+        _, data = mail.fetch(str(i), '(RFC822)')
         for response_part in data:
             if isinstance(response_part, tuple):
                 msg = email.message_from_string(
-                    response_part[1].decode("utf-8"))
+                    response_part[1].decode("utf-8")
+                )
                 email_subject = str(msg['subject'])
                 email_from = str(msg['from'])
                 email_body = str(get_text(msg).decode("utf-8"))
-                unread_msg = '\n'.join([unread_msg,email_from,email_subject,email_body,delimiter])
+                unread_msg = '\n'.join([
+                    unread_msg,
+                    email_from,
+                    email_subject,
+                    email_body,
+                    delimiter
+                ])
         count += 1
         if count >= 1:
             break
