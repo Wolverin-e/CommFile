@@ -15,3 +15,6 @@ venv
 # Inside mail_drive
 mail_drive/*
 test.sh
+
+#Inside MailFile
+persons.csv
